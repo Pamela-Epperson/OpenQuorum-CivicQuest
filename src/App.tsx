@@ -64,18 +64,18 @@ function BoardCard({board,onFill,flash}){
             {!hasQuorum&&<span style={{fontSize:10,padding:"1px 6px",borderRadius:20,background:"#FCEBEB",color:"#791F1F",fontWeight:500}}>No quorum</span>}
             {board.importance==="critical"&&hasQuorum&&<span style={{fontSize:10,padding:"1px 6px",borderRadius:20,background:"#FAEEDA",color:"#633806",fontWeight:500}}>Watch</span>}
           </div>
-          <p style={{margin:0,fontSize:11,color:"#888"}}>{board.constituent}</p>
+          <p style={{margin:0,fontSize:11,color:"#666"}}>{board.constituent}</p>
         </div>
         <div style={{textAlign:"right",flexShrink:0}}>
           <p style={{margin:"0 0 1px",fontSize:15,fontWeight:600,color:!hasQuorum?"#E24B4A":"#1a1a1a"}}>{board.filledSeats}/{board.totalSeats}</p>
-          <p style={{margin:0,fontSize:10,color:"#aaa"}}>seated</p>
+          <p style={{margin:0,fontSize:10,color:"#767676"}}>seated</p>
         </div>
       </div>
       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
         <div style={{flex:1,height:5,background:"#eee",borderRadius:3,overflow:"hidden"}}>
           <div style={{height:5,width:`${pct}%`,background:!hasQuorum?"#E24B4A":pct<70?"#EF9F27":"#1D9E75",borderRadius:3,transition:"width 0.4s"}}/>
         </div>
-        <span style={{fontSize:10,color:"#888",minWidth:32}}>{pct}%</span>
+        <span style={{fontSize:10,color:"#666",minWidth:32}}>{pct}%</span>
       </div>
       {vacantSeats>0&&(
         <button onClick={()=>onFill(board)}
@@ -91,15 +91,25 @@ function BoardCard({board,onFill,flash}){
 // ─── Candidate Modal ───────────────────────────────────────────────────────────
 function CandidateModal({board,onAppoint,onClose}){
   const [candidates]=useState(()=>makeCandidates(board.id));
+  const firstBtnRef=useRef(null);
+
+  // Focus first Appoint button on open; Escape key closes
+  useEffect(()=>{
+    firstBtnRef.current?.focus();
+    const onKeyDown=(e)=>{ if(e.key==="Escape") onClose(); };
+    document.addEventListener("keydown",onKeyDown);
+    return()=>document.removeEventListener("keydown",onKeyDown);
+  },[onClose]);
+
   return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:16}} onClick={onClose}>
-      <div style={{background:"#fff",borderRadius:12,padding:"1.5rem",maxWidth:480,width:"100%"}} onClick={e=>e.stopPropagation()}>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.55)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:16}} onClick={onClose} aria-hidden="true">
+      <div role="dialog" aria-modal="true" aria-labelledby="candidate-modal-title" style={{background:"#fff",borderRadius:12,padding:"1.5rem",maxWidth:480,width:"100%"}} onClick={e=>e.stopPropagation()}>
         <div style={{marginBottom:"1rem"}}>
-          <p style={{margin:"0 0 3px",fontSize:11,color:"#888",textTransform:"uppercase",letterSpacing:"0.07em"}}>Appointment to</p>
-          <p style={{margin:0,fontSize:15,fontWeight:600,color:"#1a1a1a"}}>{board.name}</p>
+          <p style={{margin:"0 0 3px",fontSize:11,color:"#666",textTransform:"uppercase",letterSpacing:"0.07em"}}>Appointment to</p>
+          <p id="candidate-modal-title" style={{margin:0,fontSize:15,fontWeight:600,color:"#1a1a1a"}}>{board.name}</p>
         </div>
-        <p style={{margin:"0 0 1rem",fontSize:12,color:"#888",lineHeight:1.6}}>Select a candidate. The Board Ready credential (🏅) indicates verified civic readiness training from OpenQuorum.</p>
-        {candidates.map(c=>(
+        <p style={{margin:"0 0 1rem",fontSize:12,color:"#666",lineHeight:1.6}}>Select a candidate. The Board Ready credential (🏅) indicates verified civic readiness training from OpenQuorum.</p>
+        {candidates.map((c,idx)=>(
           <div key={c.id} style={{border:`1px solid ${c.oqCertified?"#1D9E75":"#eee"}`,borderRadius:10,padding:"0.9rem 1rem",marginBottom:8,background:c.oqCertified?"#F0FBF7":"#fff"}}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,marginBottom:4}}>
               <div>
@@ -107,20 +117,20 @@ function CandidateModal({board,onAppoint,onClose}){
                   <span style={{fontSize:13,fontWeight:600}}>{c.name}</span>
                   {c.oqCertified&&<span style={{fontSize:10,padding:"1px 7px",borderRadius:20,background:"#1D9E75",color:"#fff",fontWeight:500}}>🏅 Board Ready</span>}
                 </div>
-                <p style={{margin:0,fontSize:11,color:"#888"}}>{c.background}</p>
+                <p style={{margin:0,fontSize:11,color:"#666"}}>{c.background}</p>
               </div>
               <div style={{textAlign:"right",flexShrink:0}}>
                 <p style={{margin:"0 0 1px",fontSize:17,fontWeight:600,color:c.fit>=80?"#1D9E75":c.fit>=65?"#EF9F27":"#E24B4A"}}>{c.fit}%</p>
-                <p style={{margin:0,fontSize:10,color:"#aaa"}}>fit score</p>
+                <p style={{margin:0,fontSize:10,color:"#767676"}}>fit score</p>
               </div>
             </div>
-            <button onClick={()=>onAppoint(board,c)}
+            <button ref={idx===0?firstBtnRef:undefined} onClick={()=>onAppoint(board,c)}
               style={{width:"100%",padding:"7px 0",borderRadius:8,border:"none",background:c.oqCertified?"#1D9E75":"#1a1a1a",color:"#fff",cursor:"pointer",fontSize:12,fontWeight:600,marginTop:4}}>
               Appoint {c.name.split(" ")[0]}
             </button>
           </div>
         ))}
-        <button onClick={onClose} style={{width:"100%",padding:"7px 0",borderRadius:8,border:"1px solid #ddd",background:"transparent",color:"#888",cursor:"pointer",fontSize:12,marginTop:4}}>
+        <button onClick={onClose} style={{width:"100%",padding:"7px 0",borderRadius:8,border:"1px solid #ddd",background:"transparent",color:"#555",cursor:"pointer",fontSize:12,marginTop:4}}>
           Decide later
         </button>
       </div>
@@ -132,7 +142,7 @@ function CandidateModal({board,onAppoint,onClose}){
 function TutorialToast({message,onDismiss}){
   if(!message) return null;
   return(
-    <div style={{position:"fixed",bottom:20,left:"50%",transform:"translateX(-50%)",background:"#0A1628",color:"#fff",borderRadius:10,padding:"0.85rem 1.25rem",maxWidth:420,width:"90%",zIndex:500,boxShadow:"0 4px 20px rgba(0,0,0,0.3)"}}>
+    <div role="status" aria-live="polite" aria-atomic="true" style={{position:"fixed",bottom:20,left:"50%",transform:"translateX(-50%)",background:"#0A1628",color:"#fff",borderRadius:10,padding:"0.85rem 1.25rem",maxWidth:420,width:"90%",zIndex:500,boxShadow:"0 4px 20px rgba(0,0,0,0.3)"}}>
       <p style={{margin:"0 0 6px",fontSize:13,lineHeight:1.6}}>{message}</p>
       <button onClick={onDismiss} style={{border:"none",background:"rgba(255,255,255,0.15)",color:"#fff",borderRadius:6,padding:"4px 12px",cursor:"pointer",fontSize:12}}>Got it</button>
     </div>
@@ -155,7 +165,7 @@ function EndScreen({score,weeks,reason,boardsFullySeated,totalAppointments,onRes
         </p>
       </div>
       <div style={{border:"1px solid #eee",borderRadius:12,padding:"1.25rem",marginBottom:12,background:"#fff"}}>
-        <p style={{margin:"0 0 8px",fontSize:12,fontWeight:500,color:"#888",textTransform:"uppercase",letterSpacing:"0.07em"}}>This is real — not just a game</p>
+        <p style={{margin:"0 0 8px",fontSize:12,fontWeight:500,color:"#666",textTransform:"uppercase",letterSpacing:"0.07em"}}>This is real — not just a game</p>
         <p style={{margin:"0 0 12px",fontSize:13,color:"#1a1a1a",lineHeight:1.7}}>The boards you just managed exist in real cities and states. Right now, hundreds of boards like these have open seats — and no one is filling them. Qualified citizens like you have no idea the opportunity exists.</p>
         <p style={{margin:"0 0 12px",fontSize:13,color:"#1a1a1a",lineHeight:1.7}}>Check real board vacancies in your state and see if you qualify for a seat:</p>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:6}}>
@@ -174,7 +184,7 @@ function EndScreen({score,weeks,reason,boardsFullySeated,totalAppointments,onRes
           ))}
         </div>
         <div style={{marginTop:12,padding:"8px 12px",borderRadius:8,background:"#f8f8f7",border:"1px solid #eee"}}>
-          <p style={{margin:"0 0 4px",fontSize:11,fontWeight:500,color:"#888",textTransform:"uppercase",letterSpacing:"0.07em"}}>Find your board seat with AI matching</p>
+          <p style={{margin:"0 0 4px",fontSize:11,fontWeight:500,color:"#666",textTransform:"uppercase",letterSpacing:"0.07em"}}>Find your board seat with AI matching</p>
           <a href="https://openquorum-vacancy-clock.vercel.app" target="_blank" rel="noreferrer"
             style={{fontSize:13,color:"#1D9E75",fontWeight:600,textDecoration:"none"}}>openquorum-vacancy-clock.vercel.app ↗</a>
         </div>
@@ -221,7 +231,7 @@ function StartScreen({onStart}){
           Crisis mode (harder)
         </button>
       </div>
-      <p style={{textAlign:"center",fontSize:11,color:"#aaa",lineHeight:1.6}}>OpenQuorum · Civic education through simulation · openquorum-vacancy-clock.vercel.app</p>
+      <p style={{textAlign:"center",fontSize:11,color:"#767676",lineHeight:1.6}}>OpenQuorum · Civic education through simulation · openquorum-vacancy-clock.vercel.app</p>
     </div>
   );
 }
@@ -369,6 +379,7 @@ export default function CivicQuest(){
 
   return(
     <div style={{fontFamily:"system-ui,-apple-system,sans-serif",maxWidth:960,margin:"0 auto",padding:"0 0 2rem",color:"#1a1a1a"}}>
+      <style>{`*:focus-visible{outline:2px solid #1D9E75;outline-offset:2px;}@media(prefers-reduced-motion:reduce){*{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important}}`}</style>
 
       {fillTarget&&<CandidateModal board={fillTarget} onAppoint={handleAppoint} onClose={()=>{setFillTarget(null);setPaused(false);}}/>}
       <TutorialToast message={tutorial&&tutorialStep<TUTORIALS.length?tutorial:null} onDismiss={()=>{setTutorial(null);setTutorialStep(s=>s+1);}}/>
@@ -401,20 +412,20 @@ export default function CivicQuest(){
       {/* Approval bar */}
       <div style={{marginBottom:"1rem",padding:"0 4px"}}>
         <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-          <span style={{fontSize:11,color:"#888"}}>Approval Rating</span>
+          <span style={{fontSize:11,color:"#666"}}>Approval Rating</span>
           <span style={{fontSize:11,color:approval>60?"#1D9E75":approval>40?"#EF9F27":"#E24B4A",fontWeight:500}}>{Math.round(approval)}% — {approval>70?"Strong":approval>55?"Moderate":approval>40?"Declining":approval>30?"Critical":"Failing"}</span>
         </div>
         <div style={{height:6,background:"#eee",borderRadius:3,overflow:"hidden"}}>
           <div style={{height:6,width:`${approval}%`,background:approval>60?"#1D9E75":approval>40?"#EF9F27":"#E24B4A",borderRadius:3,transition:"width 0.5s"}}/>
         </div>
-        {approval<=35&&<p style={{margin:"4px 0 0",fontSize:11,color:"#E24B4A",fontWeight:500}}>⚠ Critical — approval below 35%. Fill vacant boards immediately.</p>}
+        {approval<=35&&<p role="alert" style={{margin:"4px 0 0",fontSize:11,color:"#E24B4A",fontWeight:500}}>⚠ Critical — approval below 35%. Fill vacant boards immediately.</p>}
       </div>
 
       <div style={{display:"grid",gridTemplateColumns:"1fr 300px",gap:14,alignItems:"start"}}>
 
         {/* Boards */}
         <div>
-          <p style={{margin:"0 0 10px",fontSize:11,fontWeight:500,color:"#888",textTransform:"uppercase",letterSpacing:"0.07em"}}>City boards ({boards.length})</p>
+          <p style={{margin:"0 0 10px",fontSize:11,fontWeight:500,color:"#666",textTransform:"uppercase",letterSpacing:"0.07em"}}>City boards ({boards.length})</p>
           {boards.map(b=>(
             <BoardCard key={b.id} board={b} onFill={handleFill} flash={!!flashBoards[b.id]}/>
           ))}
@@ -423,10 +434,10 @@ export default function CivicQuest(){
         {/* Event feed */}
         <div style={{position:"sticky",top:16}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-            <p style={{margin:0,fontSize:11,fontWeight:500,color:"#888",textTransform:"uppercase",letterSpacing:"0.07em"}}>City hall feed</p>
+            <p style={{margin:0,fontSize:11,fontWeight:500,color:"#666",textTransform:"uppercase",letterSpacing:"0.07em"}}>City hall feed</p>
             {oqUnlocked&&<span style={{fontSize:10,padding:"2px 7px",borderRadius:20,background:"#E1F5EE",color:"#0F6E56",fontWeight:500}}>🏅 OQ Active</span>}
           </div>
-          <div style={{maxHeight:520,overflowY:"auto"}}>
+          <div style={{maxHeight:520,overflowY:"auto"}} aria-live="polite" aria-label="City Hall event feed" aria-relevant="additions" aria-atomic="false">
             {events.map(e=>(
               <div key={e.id} style={{marginBottom:8,padding:"0.75rem",borderRadius:8,background:e.type==="success"?"#F0FBF7":e.type==="info"?"#f8f8f7":"#fff",border:`1px solid ${e.type==="success"?"#9FE1CB":e.type==="info"?"#eee":"#f0f0f0"}`}}>
                 <div style={{display:"flex",gap:6,alignItems:"flex-start"}}>
