@@ -379,7 +379,7 @@ function WinnerScorecard({score,weeks,totalAppts,boards,grade,gradeColor,reason}
     x.fillStyle="#1D9E75";x.font="italic 600 18px Georgia";
     x.fillText("If they can see it, they can be it.",W/2,y); y+=40;
     x.fillStyle="rgba(255,255,255,0.5)";x.font="14px system-ui";
-    x.fillText("Real boards. Real seats. Find yours — openquorum.org",W/2,y);
+    x.fillText("Real boards. Real seats. Find yours — openquorum.us.com",W/2,y);
     const a=document.createElement("a");
     a.download="OpenQuorum-Winner-Scorecard.png";
     a.href=c.toDataURL("image/png");
