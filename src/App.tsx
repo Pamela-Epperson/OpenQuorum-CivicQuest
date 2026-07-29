@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { useState, useEffect, useCallback, useRef } from "react";
+import Pathways from "./pathways/Pathways";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const TICK_MS = 4000;
@@ -562,7 +563,7 @@ function EndScreen({score,weeks,reason,boards,fullEvents,totalAppointments,onRes
 }
 
 // ─── Start Screen ──────────────────────────────────────────────────────────────
-function StartScreen({onStart}){
+function StartScreen({onStart,onPathways}){
   return(
     <div style={{maxWidth:540,margin:"2rem auto",fontFamily:"system-ui,-apple-system,sans-serif",padding:"0 16px"}}>
       <div style={{background:"#0A1628",borderRadius:14,padding:"2rem",marginBottom:14,textAlign:"center"}}>
@@ -593,6 +594,10 @@ function StartScreen({onStart}){
         <button onClick={()=>onStart("crisis")}
           style={{width:"100%",padding:"10px 0",borderRadius:10,border:"1px solid rgba(255,255,255,0.2)",background:"transparent",color:"rgba(255,255,255,0.7)",cursor:"pointer",fontSize:13}}>
           Crisis mode (harder)
+        </button>
+        <button onClick={onPathways}
+          style={{width:"100%",padding:"10px 0",borderRadius:10,border:"1px solid rgba(255,255,255,0.2)",background:"transparent",color:"rgba(255,255,255,0.7)",cursor:"pointer",fontSize:13,marginTop:8}}>
+          🧭 Explore real seats near you — Pathways
         </button>
       </div>
       <p style={{textAlign:"center",fontSize:11,color:"#54544E",lineHeight:1.6}}>OpenQuorum · Civic education through simulation · openquorum-vacancy-clock.vercel.app</p>
@@ -743,7 +748,8 @@ export default function CivicQuest(){
   const totalVacant=boards.reduce((s,b)=>s+b.totalSeats-b.filledSeats,0);
   const atQuorum=boards.filter(b=>b.filledSeats/b.totalSeats>=QUORUM_MIN).length;
 
-  if(screen==="start") return <StartScreen onStart={startGame}/>;
+  if(screen==="pathways") return <Pathways onExit={()=>setScreen("start")}/>;
+  if(screen==="start")    return <StartScreen onStart={startGame} onPathways={()=>setScreen("pathways")}/>;
   if(screen==="end")   return <EndScreen score={score} weeks={week} reason={endReason} boards={boards} fullEvents={fullHistoryRef.current} totalAppointments={totalAppts} onRestart={()=>setScreen("start")}/>;
 
   return(
